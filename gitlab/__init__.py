@@ -136,6 +136,17 @@ class Gitlab(object):
                     manager = getattr(objects, cls_name)(self)
                     setattr(self, var_name, manager)
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        module = state.pop('_objects')
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        objects = importlib.import_module('gitlab.v%s.objects' %
+                                          self._api_version)
+        self._objects = objects
+
     @property
     def api_version(self):
         return self._api_version
